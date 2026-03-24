@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../main.dart';
+import '../state/auth_provider.dart';
 import 'onboarding_screen.dart';
+import 'home_screen.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
+class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnim;
@@ -24,28 +27,36 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 1600),
     );
     _fadeAnim = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0, 0.5, curve: Curves.easeOut)),
+      CurvedAnimation(parent: _controller,
+          curve: const Interval(0, 0.5, curve: Curves.easeOut)),
     );
     _scaleAnim = Tween<double>(begin: 0.85, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0, 0.5, curve: Curves.easeOutBack)),
+      CurvedAnimation(parent: _controller,
+          curve: const Interval(0, 0.5, curve: Curves.easeOutBack)),
     );
     _slideAnim = Tween<double>(begin: 30, end: 0).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.3, 0.7, curve: Curves.easeOut)),
+      CurvedAnimation(parent: _controller,
+          curve: const Interval(0.3, 0.7, curve: Curves.easeOut)),
     );
     _controller.forward();
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (_, __, ___) => const OnboardingScreen(),
-            transitionsBuilder: (_, anim, __, child) =>
-                FadeTransition(opacity: anim, child: child),
-            transitionDuration: const Duration(milliseconds: 500),
-          ),
-        );
-      }
-    });
+
+    // After animation, check auth state and route accordingly
+    Future.delayed(const Duration(milliseconds: 2400), _navigate);
+  }
+
+  void _navigate() {
+    if (!mounted) return;
+    final user = ref.read(currentUserProvider);
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) =>
+            user != null ? const HomeScreen() : const OnboardingScreen(),
+        transitionsBuilder: (_, anim, __, child) =>
+            FadeTransition(opacity: anim, child: child),
+        transitionDuration: const Duration(milliseconds: 500),
+      ),
+    );
   }
 
   @override
@@ -68,7 +79,6 @@ class _SplashScreenState extends State<SplashScreen>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Logo mark
                   Container(
                     width: 80,
                     height: 80,
@@ -77,15 +87,13 @@ class _SplashScreenState extends State<SplashScreen>
                       borderRadius: BorderRadius.circular(24),
                     ),
                     child: const Center(
-                      child: Text(
-                        'P',
-                        style: TextStyle(
-                          fontSize: 42,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.black,
-                          letterSpacing: -2,
-                        ),
-                      ),
+                      child: Text('P',
+                          style: TextStyle(
+                            fontSize: 42,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.black,
+                            letterSpacing: -2,
+                          )),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -93,15 +101,13 @@ class _SplashScreenState extends State<SplashScreen>
                     offset: Offset(0, _slideAnim.value),
                     child: Opacity(
                       opacity: (_controller.value * 2).clamp(0, 1),
-                      child: const Text(
-                        'PADEL',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 8,
-                        ),
-                      ),
+                      child: const Text('PADEL',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 8,
+                          )),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -109,15 +115,13 @@ class _SplashScreenState extends State<SplashScreen>
                     offset: Offset(0, _slideAnim.value),
                     child: Opacity(
                       opacity: (_controller.value * 2).clamp(0, 1),
-                      child: Text(
-                        'COURT',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.4),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: 6,
-                        ),
-                      ),
+                      child: Text('COURT',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.4),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 6,
+                          )),
                     ),
                   ),
                 ],
